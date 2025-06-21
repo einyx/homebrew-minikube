@@ -1,4 +1,4 @@
-# Homebrew Minikube SSH
+# Homebrew Minikube
 
 This tap provides a custom build of minikube with SSH tunnel support for remote Docker contexts.
 
@@ -13,8 +13,8 @@ This tap provides a custom build of minikube with SSH tunnel support for remote 
 ## Installation
 
 ```bash
-brew tap einyx/minikube-ssh
-brew install minikube-ssh
+brew tap einyx/minikube
+brew install einyx/minikube/minikube
 ```
 
 ## Usage
@@ -23,13 +23,13 @@ The binary will be installed as `minikube`. If you have the official minikube in
 
 ```bash
 brew uninstall minikube
-brew install einyx/minikube-ssh/minikube-ssh
+brew install einyx/minikube/minikube
 ```
 
 Or use it alongside the official version by calling it with its full path:
 
 ```bash
-/opt/homebrew/opt/minikube-ssh/bin/minikube
+/opt/homebrew/opt/minikube/bin/minikube
 ```
 
 ## Version

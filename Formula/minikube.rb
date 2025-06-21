@@ -1,4 +1,4 @@
-class MinikubeSsh < Formula
+class Minikube < Formula
   desc "Run a Kubernetes cluster locally with SSH tunnel support for remote Docker"
   homepage "https://github.com/kubernetes/minikube"
   version "1.36.0-ssh"
@@ -45,13 +45,13 @@ class MinikubeSsh < Formula
   def post_install
     (etc/"bash_completion.d").mkpath
     system "#{bin}/minikube", "completion", "bash", "--", ">", 
-           "#{etc}/bash_completion.d/minikube-ssh" if which("bash")
+           "#{etc}/bash_completion.d/minikube" if which("bash")
 
-    (fish_completion/"minikube-ssh.fish").write Utils.safe_popen_read(
+    (fish_completion/"minikube.fish").write Utils.safe_popen_read(
       "#{bin}/minikube", "completion", "fish", "--"
     ) if which("fish")
 
-    (zsh_completion/"_minikube-ssh").write Utils.safe_popen_read(
+    (zsh_completion/"_minikube").write Utils.safe_popen_read(
       "#{bin}/minikube", "completion", "zsh", "--"
     ) if which("zsh")
   end
