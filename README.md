@@ -14,7 +14,7 @@ This tap provides a custom build of minikube with SSH tunnel support for remote 
 
 ```bash
 brew tap einyx/minikube
-brew install einyx/minikube/minikube
+brew install einyx/minikube
 ```
 
 ## Usage
@@ -23,7 +23,7 @@ The binary will be installed as `minikube`. If you have the official minikube in
 
 ```bash
 brew uninstall minikube
-brew install einyx/minikube/minikube
+brew install einyx/minikube
 ```
 
 Or use it alongside the official version by calling it with its full path:
