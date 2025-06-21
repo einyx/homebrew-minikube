@@ -1,0 +1,66 @@
+name: Update Formula on Dispatch
+
+on:
+  repository_dispatch:
+    types: [update-formula]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update Formula
+        run: |
+          # Extract inputs from the event payload
+          TAG_NAME="${{ github.event.client_payload.tag_name }}"
+          VERSION="${TAG_NAME#v}"
+          
+          # Create a backup
+          cp Formula/minikube.rb Formula/minikube.rb.bak
+          
+          # Update version
+          sed -i "s/version \".*\"/version \"${VERSION}\"/" Formula/minikube.rb
+          
+          # Update URLs - change from einyx/minikube to einyx/homebrew-minikube
+          sed -i "s|https://github.com/einyx/minikube/releases/download/.*/minikube-|https://github.com/einyx/homebrew-minikube/releases/download/${TAG_NAME}/minikube-|g" Formula/minikube.rb
+          
+          # Update checksums with proper line handling
+          {
+            while IFS= read -r line; do
+              echo "$line"
+              if [[ "$line" == *"minikube-darwin-arm64"* ]]; then
+                read -r sha_line
+                echo "      sha256 \"${{ github.event.client_payload.darwin_arm64_sha }}\""
+              elif [[ "$line" == *"minikube-darwin-amd64"* ]]; then
+                read -r sha_line
+                echo "      sha256 \"${{ github.event.client_payload.darwin_amd64_sha }}\""
+              elif [[ "$line" == *"minikube-linux-arm64"* ]]; then
+                read -r sha_line
+                echo "      sha256 \"${{ github.event.client_payload.linux_arm64_sha }}\""
+              elif [[ "$line" == *"minikube-linux-amd64"* ]]; then
+                read -r sha_line
+                echo "      sha256 \"${{ github.event.client_payload.linux_amd64_sha }}\""
+              fi
+            done
+          } < Formula/minikube.rb.bak > Formula/minikube.rb.new
+          
+          mv Formula/minikube.rb.new Formula/minikube.rb
+          rm Formula/minikube.rb.bak
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "Update minikube to ${{ github.event.client_payload.tag_name }}"
+          title: "Update minikube to ${{ github.event.client_payload.tag_name }}"
+          body: |
+            Automated update of minikube formula to version ${{ github.event.client_payload.tag_name }}
+            
+            ## Checksums
+            - darwin-amd64: `${{ github.event.client_payload.darwin_amd64_sha }}`
+            - darwin-arm64: `${{ github.event.client_payload.darwin_arm64_sha }}`
+            - linux-amd64: `${{ github.event.client_payload.linux_amd64_sha }}`
+            - linux-arm64: `${{ github.event.client_payload.linux_arm64_sha }}`
+          branch: update-minikube-${{ github.event.client_payload.tag_name }}
+          delete-branch: true

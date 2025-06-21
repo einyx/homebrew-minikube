@@ -1,0 +1,84 @@
+name: Update Formula
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag name'
+        required: true
+        type: string
+      darwin_amd64_sha:
+        description: 'SHA256 for darwin-amd64'
+        required: true
+        type: string
+      darwin_arm64_sha:
+        description: 'SHA256 for darwin-arm64'
+        required: true
+        type: string
+      linux_amd64_sha:
+        description: 'SHA256 for linux-amd64'
+        required: true
+        type: string
+      linux_arm64_sha:
+        description: 'SHA256 for linux-arm64'
+        required: true
+        type: string
+
+jobs:
+  update-formula:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update Formula
+        run: |
+          # Update version
+          TAG_NAME="${{ inputs.tag_name }}"
+          VERSION="${TAG_NAME#v}"
+          
+          # Update version line
+          sed -i "s/version \".*\"/version \"${VERSION}\"/" Formula/minikube.rb
+          
+          # Update download URLs
+          sed -i "s|download/.*/minikube-darwin-arm64\"|download/${TAG_NAME}/minikube-darwin-arm64\"|" Formula/minikube.rb
+          sed -i "s|download/.*/minikube-darwin-amd64\"|download/${TAG_NAME}/minikube-darwin-amd64\"|" Formula/minikube.rb
+          sed -i "s|download/.*/minikube-linux-arm64\"|download/${TAG_NAME}/minikube-linux-arm64\"|" Formula/minikube.rb
+          sed -i "s|download/.*/minikube-linux-amd64\"|download/${TAG_NAME}/minikube-linux-amd64\"|" Formula/minikube.rb
+          
+          # Update checksums using a more reliable method
+          cp Formula/minikube.rb Formula/minikube.rb.bak
+          
+          # Process the file line by line
+          while IFS= read -r line; do
+            if [[ "$line" == *"minikube-darwin-arm64"* ]]; then
+              echo "$line"
+              read -r sha_line
+              echo "      sha256 \"${{ inputs.darwin_arm64_sha }}\""
+            elif [[ "$line" == *"minikube-darwin-amd64"* ]]; then
+              echo "$line"
+              read -r sha_line
+              echo "      sha256 \"${{ inputs.darwin_amd64_sha }}\""
+            elif [[ "$line" == *"minikube-linux-arm64"* ]]; then
+              echo "$line"
+              read -r sha_line
+              echo "      sha256 \"${{ inputs.linux_arm64_sha }}\""
+            elif [[ "$line" == *"minikube-linux-amd64"* ]]; then
+              echo "$line"
+              read -r sha_line
+              echo "      sha256 \"${{ inputs.linux_amd64_sha }}\""
+            else
+              echo "$line"
+            fi
+          done < Formula/minikube.rb.bak > Formula/minikube.rb
+          
+          rm Formula/minikube.rb.bak
+
+      - name: Commit and Push
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          
+          git add Formula/minikube.rb
+          git commit -m "Update minikube formula to ${{ inputs.tag_name }}"
+          git push
