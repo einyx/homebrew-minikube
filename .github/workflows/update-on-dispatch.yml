@@ -23,8 +23,8 @@ jobs:
           # Update version
           sed -i "s/version \".*\"/version \"${VERSION}\"/" Formula/minikube.rb
           
-          # Update URLs - change from einyx/minikube to einyx/homebrew-minikube
-          sed -i "s|https://github.com/einyx/minikube/releases/download/.*/minikube-|https://github.com/einyx/homebrew-minikube/releases/download/${TAG_NAME}/minikube-|g" Formula/minikube.rb
+          # Update URLs - change from einyx/minikube to einyx/homebrew-minikube-remote
+          sed -i "s|https://github.com/einyx/minikube/releases/download/.*/minikube-|https://github.com/einyx/homebrew-minikube-remote/releases/download/${TAG_NAME}/minikube-|g" Formula/minikube.rb
           
           # Update checksums with proper line handling
           {
